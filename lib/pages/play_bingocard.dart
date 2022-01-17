@@ -2,6 +2,9 @@ import 'package:bingochart_app/pages/change_bingocards.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../db/bingocard_repository.dart';
+import '../model/bingocard_items.dart';
+
 class PlayBingocard extends StatefulWidget {
   EditBingocardArguments arguments;
 
@@ -16,9 +19,24 @@ class _PlayBingocard extends State<PlayBingocard> {
 
   _PlayBingocard(this.arguments);
 
+  late List<BingocardItems> items;
+  bool isLoading = false;
+
+  Future getListItems() async {
+    setState(() => isLoading = true);
+    items = await BingocardRepository.instance.getItems(arguments.id);
+    setState(() => isLoading = false);
+  }
+
   @override
   void initState() {
     super.initState();
+    getListItems();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -27,72 +45,71 @@ class _PlayBingocard extends State<PlayBingocard> {
         appBar: AppBar(
           title: Text(arguments.name),
         ),
-        body: const CheckboxList());
+        body: isLoading
+            ? const CircularProgressIndicator()
+            : items.isEmpty
+                ? const Text("No items")
+                : Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Center(
+                      child: CheckboxList(items),
+                    ),
+                  ));
   }
 }
 
 class CheckboxList extends StatefulWidget {
-  const CheckboxList({Key? key}) : super(key: key);
+  final List<BingocardItems> items;
+
+  const CheckboxList(this.items, {Key? key}) : super(key: key);
 
   @override
-  _CheckboxList createState() => _CheckboxList();
+  _CheckboxList createState() => _CheckboxList(this.items);
 }
 
 class _CheckboxList extends State<CheckboxList> {
+  late List<BingocardItems> items;
+  _CheckboxList(this.items);
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        GridView.count(
-            crossAxisCount: 5,
-            childAspectRatio: 3,
-            shrinkWrap: true,
-            children: List.generate(25, (index) {
-              return const CustomCheckBox();
-            })),
-      ],
-    );
+    var size = MediaQuery.of(context).size;
+    final double itemHeight = (size.height - kToolbarHeight - 24) / 2;
+    final double itemWidth = size.width / 2;
+    return GridView.count(
+        crossAxisCount: 5,
+        childAspectRatio: (itemWidth / itemHeight),
+        children: List.generate(25, (index) {
+          return SizedBox(child: CustomCheckBox(items[index]));
+        }));
   }
 }
 
 class CustomCheckBox extends StatefulWidget {
-  const CustomCheckBox({Key? key}) : super(key: key);
+  late BingocardItems item;
+  CustomCheckBox(this.item, {Key? key}) : super(key: key);
 
   @override
-  _CustomCheckBox createState() => _CustomCheckBox();
+  _CustomCheckBox createState() => _CustomCheckBox(item);
 }
 
 class _CustomCheckBox extends State<CustomCheckBox> {
-  bool isChecked = false;
+  bool _selected = false;
+  late BingocardItems item;
+
+  _CustomCheckBox(this.item);
 
   @override
   Widget build(BuildContext context) {
-    Color getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return Colors.blue;
-      }
-      return Colors.red;
-    }
-
-    return Column(
-      children: [
-        Checkbox(
-          checkColor: Colors.white,
-          fillColor: MaterialStateProperty.resolveWith(getColor),
-          value: isChecked,
-          onChanged: (bool? value) {
-            setState(() {
-              isChecked = value!;
-            });
-          },
-        ),
-        const Text("e1qwe")
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListTile(
+        tileColor: _selected ? Colors.blue : null,
+        // If current item is selected show blue color
+        title: Text(item.name.toString()),
+        onTap: () => setState(() => _selected = !_selected),
+        dense: true,
+      ),
     );
   }
 }
