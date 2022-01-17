@@ -31,7 +31,3 @@ class Bingocard {
   Bingocard copy({int? id, String? name}) =>
       Bingocard(id: id ?? this.id, name: name ?? this.name);
 }
-
-class PlayBingocard{
-
-}

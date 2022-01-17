@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../db/bingocard_repository.dart';
+import '../model/bingocard.dart';
 import 'change_bingocards.dart';
-
 class SelectBingocard extends StatefulWidget {
   const SelectBingocard({Key? key}) : super(key: key);
 
