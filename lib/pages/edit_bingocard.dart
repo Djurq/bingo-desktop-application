@@ -47,6 +47,10 @@ class _EditBingocard extends State<EditBingocard> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    final double itemHeight = (size.height - kToolbarHeight - 24) / 2;
+    final double itemWidth = size.width / 2;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(arguments.name),
@@ -60,10 +64,9 @@ class _EditBingocard extends State<EditBingocard> {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                       child: SizedBox(
-                          width: 1000,
                           child: GridView.count(
-                            crossAxisCount: 2,
-                            childAspectRatio: 6,
+                            crossAxisCount: 5,
+                            childAspectRatio: (itemWidth / itemHeight),
                             children: List.generate(
                               items.length,
                               (index) {
@@ -74,6 +77,10 @@ class _EditBingocard extends State<EditBingocard> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(24.0),
                                         child: TextField(
+                                          expands: true,
+                                          maxLines: null,
+                                          minLines: null,
+
                                           controller: TextEditingController(
                                               text: items[index].name),
                                           textInputAction: TextInputAction.go,
