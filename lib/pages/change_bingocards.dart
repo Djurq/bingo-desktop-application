@@ -1,7 +1,8 @@
+import 'dart:ffi';
+
 import 'package:bingochart_app/db/bingocard_repository.dart';
 import 'package:bingochart_app/model/bingocard.dart';
 import 'package:bingochart_app/pages/edit_bingocard.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ChangeBingocards extends StatefulWidget {
@@ -31,6 +32,13 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
     setState(() => isLoading = true);
     cards = await BingocardRepository.instance.readAllBingocards();
     setState(() => isLoading = false);
+  }
+
+  Future delete(int id, int index) async{
+    BingocardRepository.instance.delete(id);
+    setState(() {
+      cards.removeAt(index);
+    });
   }
 
   Future createAddDialog(BuildContext context) {
@@ -78,7 +86,10 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
                                 //fix this dumbass
                                 name: cards[index].name,
                                 index: index + 1,
-                                id: cards[index].id!);
+                                id: cards[index].id!,
+                              deleteButton: IconButton(icon: const Icon(Icons.clear), onPressed: () { delete(cards[index].id!, index); },),
+                            )
+                            ;
                           },
                         )),
           ElevatedButton(
@@ -98,11 +109,12 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
 
 class BingocardCard extends StatelessWidget {
   const BingocardCard(
-      {Key? key, required this.name, required this.index, required this.id})
+      {Key? key, required this.name, required this.index, required this.id, required this.deleteButton})
       : super(key: key);
   final String name;
   final int index;
   final int id;
+  final IconButton deleteButton;
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +126,11 @@ class BingocardCard extends StatelessWidget {
                   EditBingocard(EditBingocardArguments(name, id))));
         },
         title: Text(index.toString() + " " + name),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded),
-      ),
-    );
+        trailing: deleteButton),
+      );
   }
 }
+
 
 class EditBingocardArguments {
   final String name;

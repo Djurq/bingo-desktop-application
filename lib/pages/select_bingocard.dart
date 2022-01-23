@@ -83,9 +83,8 @@ class BingocardCard2 extends StatelessWidget {
               builder: (context) =>
               PlayBingocard(EditBingocardArguments(name, id))));
         },
-        title: Text(index.toString() + " " + name),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded),
-      ),
-    );
+        title: Text(index.toString() + " " + name)
+        ),
+      );
   }
 }
