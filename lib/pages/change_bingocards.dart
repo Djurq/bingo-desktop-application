@@ -6,7 +6,6 @@ import 'package:bingochart_app/pages/edit_bingocard.dart';
 import 'package:flutter/material.dart';
 
 class ChangeBingocards extends StatefulWidget {
-
   const ChangeBingocards({Key? key}) : super(key: key);
 
   @override
@@ -34,7 +33,7 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
     setState(() => isLoading = false);
   }
 
-  Future delete(int id, int index) async{
+  Future delete(int id, int index) async {
     BingocardRepository.instance.delete(id);
     setState(() {
       cards.removeAt(index);
@@ -64,6 +63,29 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
         });
   }
 
+  Future renameAddDialog(BuildContext context) {
+    TextEditingController controller = TextEditingController();
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Rename bingocard"),
+            content: TextField(
+              controller: controller,
+            ),
+            actions: <Widget>[
+              MaterialButton(
+                elevation: 5.0,
+                child: const Text("Rename"),
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text.toString());
+                },
+              )
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,13 +105,26 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
                           itemCount: cards.length,
                           itemBuilder: (context, index) {
                             return BingocardCard(
-                                //fix this dumbass
-                                name: cards[index].name,
-                                index: index + 1,
-                                id: cards[index].id!,
-                              deleteButton: IconButton(icon: const Icon(Icons.clear), onPressed: () { delete(cards[index].id!, index); },),
-                            )
-                            ;
+                              name: cards[index].name,
+                              index: index + 1,
+                              id: cards[index].id!,
+                              deleteButton: IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  delete(cards[index].id!, index);
+                                },
+                              ),
+                              renameButton: IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () async {
+                                  renameAddDialog(context).then((value) async {
+                                    await BingocardRepository.instance
+                                        .update(Bingocard(name: value, id: cards[index].id!));
+                                    await refreshCards();
+                                  });
+                                },
+                              ),
+                            );
                           },
                         )),
           ElevatedButton(
@@ -109,28 +144,40 @@ class _ChangeBingoCards extends State<ChangeBingocards> {
 
 class BingocardCard extends StatelessWidget {
   const BingocardCard(
-      {Key? key, required this.name, required this.index, required this.id, required this.deleteButton})
+      {Key? key,
+      required this.name,
+      required this.index,
+      required this.id,
+      required this.deleteButton, required this.renameButton})
       : super(key: key);
   final String name;
   final int index;
   final int id;
   final IconButton deleteButton;
+  final IconButton renameButton;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  EditBingocard(EditBingocardArguments(name, id))));
-        },
-        title: Text(index.toString() + " " + name),
-        trailing: deleteButton),
-      );
+        child: ListTile(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      EditBingocard(EditBingocardArguments(name, id))));
+            },
+            title: Text(index.toString() + " " + name),
+            trailing: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 500,
+                child: ButtonBar(children: [
+                  renameButton,
+                  deleteButton
+                ]),
+              ),
+            )));
   }
 }
-
 
 class EditBingocardArguments {
   final String name;

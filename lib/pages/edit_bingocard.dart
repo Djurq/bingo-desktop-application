@@ -80,7 +80,6 @@ class _EditBingocard extends State<EditBingocard> {
                                           expands: true,
                                           maxLines: null,
                                           minLines: null,
-
                                           controller: TextEditingController(
                                               text: items[index].name),
                                           textInputAction: TextInputAction.go,
